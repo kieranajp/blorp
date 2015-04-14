@@ -10,7 +10,7 @@
     // Create & configure our module
     var app = angular.module("baselineApp", []);
 
-    require("./directives")(app);
+    require("./templates/directives")(app);
 
     require("./factories/preload")(app);
     require("./factories/question")(app);

@@ -23,7 +23,7 @@ module.exports = function(app) {
             preloadFactory
                 .loadAudio()
                 .then(function(d) {
-                    console.debug('preloadFactory.loadImages().then()');
+                    console.debug('preloadFactory.loadVideo().then()');
                     deferred.resolve(d);
                 });
 
@@ -63,19 +63,14 @@ module.exports = function(app) {
             loadAssets: function(testId) {
                 var deferred = $q.defer();
 
-                loadAudio()
-                    .then(function(d) {
-                        console.debug('assessmentFactory.loadAudio().then()');
-                        return loadVideo();
-                    })
-                    .then(function(d) {
-                        console.debug('assessmentFactory.loadVideo().then()');
-                        return loadImages();
-                    })
-                    .then(function(d) {
-                        console.debug('assessmentFactory.loadImages().then()');
-                        deferred.resolve();
-                    });
+                $q.all([
+                    loadAudio(),
+                    loadImages(),
+                    loadVideo()
+                ])
+                .then(function() {
+                    deferred.resolve();
+                });
 
                 return deferred.promise;
             }

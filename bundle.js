@@ -11,7 +11,7 @@
     // Create & configure our module
     var app = angular.module("baselineApp", []);
 
-    require("./directives")(app);
+    require("./templates/directives")(app);
 
     require("./factories/preload")(app);
     require("./factories/question")(app);
@@ -19,7 +19,7 @@
 
     require("./controllers/Artboard")(app);
 })();
-},{"./controllers/Artboard":2,"./directives":3,"./factories/assessment":4,"./factories/preload":5,"./factories/question":6}],2:[function(require,module,exports){
+},{"./controllers/Artboard":2,"./factories/assessment":3,"./factories/preload":4,"./factories/question":5,"./templates/directives":6}],2:[function(require,module,exports){
 module.exports = function(app) {
 
     function ArtboardCtrl($scope, $q, questionFactory, assessmentFactory) {
@@ -54,38 +54,6 @@ module.exports = function(app) {
 };
 },{}],3:[function(require,module,exports){
 module.exports = function(app) {
-    app.directive("artboard", function() {
-        return {
-            restrict: "E",
-            templateUrl: "artboard.html"
-        };
-    });
-
-    app.directive("question", function() {
-        return {
-            restrict: "E",
-            templateUrl: "question.html"
-        };
-    });
-
-    app.directive("opt", function() {
-        return {
-            restrict: "E",
-            templateUrl: "option.html"
-        };
-    });
-
-    app.directive("controls", function() {
-        return {
-            restrict: "E",
-            templateUrl: "controls.html"
-        };
-    });
-
-    return app;
-};
-},{}],4:[function(require,module,exports){
-module.exports = function(app) {
     // Factory to deal with providing assessment data
     // including resuming assessments etc.
     app.factory("assessmentFactory", ["$http", "$q", "preloadFactory", function($http, $q, preloadFactory) {
@@ -110,7 +78,7 @@ module.exports = function(app) {
             preloadFactory
                 .loadAudio()
                 .then(function(d) {
-                    console.debug('preloadFactory.loadImages().then()');
+                    console.debug('preloadFactory.loadVideo().then()');
                     deferred.resolve(d);
                 });
 
@@ -150,19 +118,14 @@ module.exports = function(app) {
             loadAssets: function(testId) {
                 var deferred = $q.defer();
 
-                loadAudio()
-                    .then(function(d) {
-                        console.debug('assessmentFactory.loadAudio().then()');
-                        return loadVideo();
-                    })
-                    .then(function(d) {
-                        console.debug('assessmentFactory.loadVideo().then()');
-                        return loadImages();
-                    })
-                    .then(function(d) {
-                        console.debug('assessmentFactory.loadImages().then()');
-                        deferred.resolve();
-                    });
+                $q.all([
+                    loadAudio(),
+                    loadImages(),
+                    loadVideo()
+                ])
+                .then(function() {
+                    deferred.resolve();
+                });
 
                 return deferred.promise;
             }
@@ -173,7 +136,7 @@ module.exports = function(app) {
 
     return app;
 };
-},{}],5:[function(require,module,exports){
+},{}],4:[function(require,module,exports){
 module.exports = function(app) {
     app.factory("preloadFactory", ["$q", "$timeout", function($q, $timeout) {
 
@@ -213,7 +176,7 @@ module.exports = function(app) {
 
     }]);
 };
-},{}],6:[function(require,module,exports){
+},{}],5:[function(require,module,exports){
 module.exports = function(app) {
     // Factory to deal with providing question data
     app.factory("questionFactory", ["$http", function($http) {
@@ -262,6 +225,38 @@ module.exports = function(app) {
 
         return QuestionFactory;
     }]);
+
+    return app;
+};
+},{}],6:[function(require,module,exports){
+module.exports = function(app) {
+    app.directive("artboard", function() {
+        return {
+            restrict: "E",
+            templateUrl: "templates/artboard.html"
+        };
+    });
+
+    app.directive("question", function() {
+        return {
+            restrict: "E",
+            templateUrl: "templates/question.html"
+        };
+    });
+
+    app.directive("opt", function() {
+        return {
+            restrict: "E",
+            templateUrl: "templates/option.html"
+        };
+    });
+
+    app.directive("controls", function() {
+        return {
+            restrict: "E",
+            templateUrl: "templates/controls.html"
+        };
+    });
 
     return app;
 };

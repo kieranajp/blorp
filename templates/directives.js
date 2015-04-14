@@ -2,28 +2,28 @@ module.exports = function(app) {
     app.directive("artboard", function() {
         return {
             restrict: "E",
-            templateUrl: "artboard.html"
+            templateUrl: "templates/artboard.html"
         };
     });
 
     app.directive("question", function() {
         return {
             restrict: "E",
-            templateUrl: "question.html"
+            templateUrl: "templates/question.html"
         };
     });
 
     app.directive("opt", function() {
         return {
             restrict: "E",
-            templateUrl: "option.html"
+            templateUrl: "templates/option.html"
         };
     });
 
     app.directive("controls", function() {
         return {
             restrict: "E",
-            templateUrl: "controls.html"
+            templateUrl: "templates/controls.html"
         };
     });
 
