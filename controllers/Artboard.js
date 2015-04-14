@@ -5,9 +5,10 @@ module.exports = function(app) {
             $q.all([
                 assessmentFactory.loadProgress(window.pupilId),
                 questionFactory.loadQuestions(window.testId),
-                assessmentFactory.loadAssets(window.testId),
+                assessmentFactory.loadAssets(),
             ])
             .then(function() {
+                console.debug("init.then");
                 questionFactory.setCurrentQuestion(assessmentFactory.getProgress());
                 startSection();
             });

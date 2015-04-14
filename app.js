@@ -12,6 +12,7 @@
 
     require("./directives")(app);
 
+    require("./factories/preload")(app);
     require("./factories/question")(app);
     require("./factories/assessment")(app);
 

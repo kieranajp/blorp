@@ -1,8 +1,47 @@
 module.exports = function(app) {
     // Factory to deal with providing assessment data
     // including resuming assessments etc.
-    app.factory("assessmentFactory", ["$http", "$q", function($http, $q) {
+    app.factory("assessmentFactory", ["$http", "$q", "preloadFactory", function($http, $q, preloadFactory) {
         var assessmentProgress = null;
+
+        var loadAudio = function() {
+            var deferred = $q.defer();
+
+            preloadFactory
+                .loadAudio()
+                .then(function(d) {
+                    console.debug('preloadFactory.loadAudio().then()');
+                    deferred.resolve(d);
+                });
+
+            return deferred.promise;
+        };
+
+        var loadVideo = function() {
+            var deferred = $q.defer();
+
+            preloadFactory
+                .loadAudio()
+                .then(function(d) {
+                    console.debug('preloadFactory.loadImages().then()');
+                    deferred.resolve(d);
+                });
+
+            return deferred.promise;
+        };
+
+        var loadImages = function() {
+            var deferred = $q.defer();
+
+            preloadFactory
+                .loadAudio()
+                .then(function(d) {
+                    console.debug('preloadFactory.loadImages().then()');
+                    deferred.resolve(d);
+                });
+
+            return deferred.promise;
+        };
 
         var AssessmentFactory = {
             loadProgress: function(pupilId) {
@@ -21,54 +60,24 @@ module.exports = function(app) {
                 return assessmentProgress;
             },
 
-            loadImages: function() {
-                console.debug("AssessmentFactory.loadImages");
-                var promise = $http.get("/images.json");
-
-                promise.then(function(payload) {
-                    var images = [];
-                    for (var i = 0; i < payload.length; ++i) {
-                        images[i] = new Image();
-                        images[i].src = res[i];
-                    }
-                });
-
-                return promise;
-            },
-
-            loadVideo: function() {
-                var wait = function() {
-                    var deferred = $q.defer();
-                    setTimeout(function() {
-                        deferred.resolve("yes");
-                    }, 2000);
-                    return deferred.promise;
-                };
-
-                wait().then(function(n) { console.log(n); });
-            },
-
-            loadAudio: function() {
-                var wait = function() {
-                    var deferred = $q.defer();
-                    setTimeout(function() {
-                        deferred.resolve("yes");
-                    }, 1000);
-                    return deferred.promise;
-                };
-
-                wait().then(function(n) { console.log(n); });
-            },
-
             loadAssets: function(testId) {
-                console.debug("AssessmentFactory.loadAssets");
+                var deferred = $q.defer();
 
-                return $q.all([
-                    this.loadImages(),
-                    this.loadVideo(),
-                    this.loadAudio()
-                ])
-                .then(function() { console.log("loaded"); });
+                loadAudio()
+                    .then(function(d) {
+                        console.debug('assessmentFactory.loadAudio().then()');
+                        return loadVideo();
+                    })
+                    .then(function(d) {
+                        console.debug('assessmentFactory.loadVideo().then()');
+                        return loadImages();
+                    })
+                    .then(function(d) {
+                        console.debug('assessmentFactory.loadImages().then()');
+                        deferred.resolve();
+                    });
+
+                return deferred.promise;
             }
         };
 

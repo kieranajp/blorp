@@ -13,12 +13,13 @@
 
     require("./directives")(app);
 
+    require("./factories/preload")(app);
     require("./factories/question")(app);
     require("./factories/assessment")(app);
 
     require("./controllers/Artboard")(app);
 })();
-},{"./controllers/Artboard":2,"./directives":3,"./factories/assessment":4,"./factories/question":5}],2:[function(require,module,exports){
+},{"./controllers/Artboard":2,"./directives":3,"./factories/assessment":4,"./factories/preload":5,"./factories/question":6}],2:[function(require,module,exports){
 module.exports = function(app) {
 
     function ArtboardCtrl($scope, $q, questionFactory, assessmentFactory) {
@@ -26,9 +27,10 @@ module.exports = function(app) {
             $q.all([
                 assessmentFactory.loadProgress(window.pupilId),
                 questionFactory.loadQuestions(window.testId),
-                assessmentFactory.loadAssets(window.testId),
+                assessmentFactory.loadAssets(),
             ])
             .then(function() {
+                console.debug("init.then");
                 questionFactory.setCurrentQuestion(assessmentFactory.getProgress());
                 startSection();
             });
@@ -86,8 +88,47 @@ module.exports = function(app) {
 module.exports = function(app) {
     // Factory to deal with providing assessment data
     // including resuming assessments etc.
-    app.factory("assessmentFactory", ["$http", "$q", function($http, $q) {
+    app.factory("assessmentFactory", ["$http", "$q", "preloadFactory", function($http, $q, preloadFactory) {
         var assessmentProgress = null;
+
+        var loadAudio = function() {
+            var deferred = $q.defer();
+
+            preloadFactory
+                .loadAudio()
+                .then(function(d) {
+                    console.debug('preloadFactory.loadAudio().then()');
+                    deferred.resolve(d);
+                });
+
+            return deferred.promise;
+        };
+
+        var loadVideo = function() {
+            var deferred = $q.defer();
+
+            preloadFactory
+                .loadAudio()
+                .then(function(d) {
+                    console.debug('preloadFactory.loadImages().then()');
+                    deferred.resolve(d);
+                });
+
+            return deferred.promise;
+        };
+
+        var loadImages = function() {
+            var deferred = $q.defer();
+
+            preloadFactory
+                .loadAudio()
+                .then(function(d) {
+                    console.debug('preloadFactory.loadImages().then()');
+                    deferred.resolve(d);
+                });
+
+            return deferred.promise;
+        };
 
         var AssessmentFactory = {
             loadProgress: function(pupilId) {
@@ -106,54 +147,24 @@ module.exports = function(app) {
                 return assessmentProgress;
             },
 
-            loadImages: function() {
-                console.debug("AssessmentFactory.loadImages");
-                var promise = $http.get("/images.json");
-
-                promise.then(function(payload) {
-                    var images = [];
-                    for (var i = 0; i < payload.length; ++i) {
-                        images[i] = new Image();
-                        images[i].src = res[i];
-                    }
-                });
-
-                return promise;
-            },
-
-            loadVideo: function() {
-                var wait = function() {
-                    var deferred = $q.defer();
-                    setTimeout(function() {
-                        deferred.resolve("yes");
-                    }, 2000);
-                    return deferred.promise;
-                };
-
-                wait().then(function(n) { console.log(n); });
-            },
-
-            loadAudio: function() {
-                var wait = function() {
-                    var deferred = $q.defer();
-                    setTimeout(function() {
-                        deferred.resolve("yes");
-                    }, 1000);
-                    return deferred.promise;
-                };
-
-                wait().then(function(n) { console.log(n); });
-            },
-
             loadAssets: function(testId) {
-                console.debug("AssessmentFactory.loadAssets");
+                var deferred = $q.defer();
 
-                return $q.all([
-                    this.loadImages(),
-                    this.loadVideo(),
-                    this.loadAudio()
-                ])
-                .then(function() { console.log("loaded"); });
+                loadAudio()
+                    .then(function(d) {
+                        console.debug('assessmentFactory.loadAudio().then()');
+                        return loadVideo();
+                    })
+                    .then(function(d) {
+                        console.debug('assessmentFactory.loadVideo().then()');
+                        return loadImages();
+                    })
+                    .then(function(d) {
+                        console.debug('assessmentFactory.loadImages().then()');
+                        deferred.resolve();
+                    });
+
+                return deferred.promise;
             }
         };
 
@@ -163,6 +174,46 @@ module.exports = function(app) {
     return app;
 };
 },{}],5:[function(require,module,exports){
+module.exports = function(app) {
+    app.factory("preloadFactory", ["$q", "$timeout", function($q, $timeout) {
+
+        var PreloadFactory = {
+            loadAudio: function() {
+                var deferred = $q.defer();
+
+                $timeout(function() {
+                    deferred.resolve("Audio loaded");
+                }, 1000);
+
+                return deferred.promise;
+            },
+
+            loadVideo: function() {
+                var deferred = $q.defer();
+
+                $timeout(function() {
+                    deferred.resolve("Video loaded");
+                }, 2500);
+
+                return deferred.promise;
+            },
+
+            loadImages: function() {
+                var deferred = $q.defer();
+
+                $timeout(function() {
+                    deferred.resolve("Images loaded");
+                }, 1000);
+
+                return deferred.promise;
+            },
+        };
+
+        return PreloadFactory;
+
+    }]);
+};
+},{}],6:[function(require,module,exports){
 module.exports = function(app) {
     // Factory to deal with providing question data
     app.factory("questionFactory", ["$http", function($http) {
