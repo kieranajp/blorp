@@ -21,7 +21,7 @@ module.exports = function(app) {
             var deferred = $q.defer();
 
             preloadFactory
-                .loadAudio()
+                .loadVideo()
                 .then(function(d) {
                     console.debug('preloadFactory.loadVideo().then()');
                     deferred.resolve(d);
@@ -34,7 +34,7 @@ module.exports = function(app) {
             var deferred = $q.defer();
 
             preloadFactory
-                .loadAudio()
+                .loadImages()
                 .then(function(d) {
                     console.debug('preloadFactory.loadImages().then()');
                     deferred.resolve(d);
